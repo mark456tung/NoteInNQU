@@ -1,5 +1,5 @@
-11.2
-eigrp cisco 提出  
+# 2021.11.2
+eigrp 由cisco 提出  
 路由協定可分為 distance-vector和 link-state  
 loop-free 環路依然存在，但不會經過  
 想要知道介面的資訊$show interfaces 介面名稱
