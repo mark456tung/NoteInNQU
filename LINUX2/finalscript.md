@@ -1,5 +1,7 @@
 # 安裝
-open new virtual machine
+open new virtual machine 
+網路介面卡三張
+一開始先設定 4c8t 8g 安裝完
 掛載硬碟開機安裝在本機
 關機後移除
 硬碟開機後 su
@@ -36,10 +38,18 @@ client:
 $ssh-keygen
 $ssh-copy-id root@ip -p 22
 ssh root@ip
+傳檔
+a copy to b
+scp src user@ip:dis
+copy a folder
+scp -r srcfolder user@ip:dis 
+a copy from b
+scp user@ip:src dis
 
 # samba 1122
 
 samba 
+
 yum install samba samba-client samba-common -y
 cd / 
 mkdir mysamba
@@ -113,6 +123,9 @@ user: anonymous
 passwrod:隨便
 
 ftp 在linux上的家目錄為/var/ftp/
+cd /var/ftp/
+chmod 777 pub
+在pub 傳輸檔案
 ftp有主動跟被動模式
 chroot 改變家目錄的位置 主要是為了安全性
 傳檔前先切bin模式
@@ -152,7 +165,8 @@ getenforce
 systemctl status firewalld
 yum install epel-realease
 yum install haproxy -y
-cp /etc/haproxy/haproxy.cfg cp /etc/haproxy/haproxy/haproxy.cfg.bak 
+cd /etc/haproxy/
+cp haproxy.cfg haproxy.cfg.bak 
 在原本的cfg貼上
 ```
 global
@@ -222,8 +236,8 @@ show databases;
 create database testdb;
 use testdb;
 create table addrbook(name varchar(50) not null, phone varchar(10));
-insert into addrbook(name,phone) values ("tom", "1234567890');
-insert into addrbook(name,phone) values ("marry", "0987654321");
+insert into addrbook(name,phone) values("tom", "1234567890');
+insert into addrbook(name,phone) values("marry", "0987654321");
 select * from addrbook;
 ```
 ```
@@ -272,7 +286,7 @@ yum install telnet-server
 rpm -qa | grep xinetd <!--check if already install xinetd -->
 yum install -y xinetd
 cd /etc/xinet.d/
-vim telent
+vim telnet
 
 ```
 service telnet
@@ -305,6 +319,7 @@ dhcp dora
 先測試內定路由是否可以ping
 server:
 ```
+systemctl stop NertworkManager
 ip addr add 192.168.10.1/24 brd + dev ens34
 ```
 clinet:
