@@ -24,7 +24,7 @@ BOOTPROTO=static
 NAME=eno16777736
 DEVICE=eno16777736
 ONBOOT=yes
-IPADDR=192.168.202.133
+IPADDR=192.168.202.135
 NETMASK=255.255.255.0
 GATEWAY=192.168.202.2
 ```
@@ -53,7 +53,18 @@ samba
 yum install samba samba-client samba-common -y
 cd / 
 mkdir mysamba
+
 vim /etc/samba/smb.conf
+[mysamba]
+        comment = Shared Directory
+        path = /mysamba
+        browseable = yes
+        writable = yes
+
+        create mode =0660
+        directory mode = 2770
+
+        valid users = root
 ![](smb.conf設定.png)
 systemctl restart smb
 systemctl status smb
@@ -62,7 +73,7 @@ smbpasswd -a root
 ![](samba-windows2.png)
 登入後下次 登入會免密登入，導致無法切換使用者
 要切換使用者 要先在terminal 
-打net user * /delete
+打net use * /delete
 
 要讓大家都可以讀取資料夾
 把valid users = root 刪掉 
@@ -218,7 +229,7 @@ systemctl status firewalld 看防火牆關了沒
 systemctl disable firewalld
 getenforce
 如果不是disabled
-要修改 /etc/selinux/config
+要修改 vim /etc/selinux/config
 +上SELINUX=disabled 
 然後重開機
 systemctl start httpd
@@ -245,7 +256,7 @@ php
 yum install php php-mysql
 systemcrl restart httpd
 cd /var/www/html
-vim test.php
+vim hi.php
 ```
 hi.php
 
@@ -275,7 +286,7 @@ if($result->num_rows>0){
 ?>
 ```
 
-# bind 
+
 
 # telnetd 1206 
 
@@ -352,4 +363,110 @@ netstat -rn
 
 
 
+# bind 
+
+BIND由此開始
+
+yum install bind bind-chroot bind-utils -y
+
+systemctl start named
+systemctl status named
+netstat -tunlp | grep 53
+dig @127.0.0.1 www.pchome.com.tw
+就會得到回應 
+dig @127.0.0.1 www.nqu.edu.tw
+host -t A www.nqu.edu.tw 127.0.0.1
+查詢成功
+
+windows cmd
+nslookup www.pchome.com.tw 192.168.56.103
+查詢失敗 因為目前53號阜只用在linux本地
+
+linux
+gedit /etc/named.conf  &
+內容
+找到 listen-on port 53{ 127.0.0.1; };
+改成 listen-on port 53{ any; };
+找到 allow-query { localhost; };
+改成 allow-query { any; };
+systemctl restart named
+
+windows cmd
+nslookup www.pchome.com.tw 192.168.56.103
+查詢成功
+
+管理網域
+gedit /etc/named.rfc1912.zones  &
+內容下方加上
+```
+zone "a.com" IN {
+	type master;
+	file "a.com.zone";
+	allow-update { none; };
+};
+```
+
+cd /var/named
+ls
+gedit a.com.zone  &
+```
+$TTL 600 ;10 minutes
+
+@ IN SOA       @ user.gmail.com (
+               2021031803 ;serial
+               10800      ;refresh
+               900        ;retry
+               604800     ;epxire
+               86400      ;minimux
+               )
+@              NS    dns1.a.com.
+dns.com        A     192.168.56.103
+dns1           A     192.168.56.103
+www            A     192.168.56.150
+eshop          CNAME www
+ftp            A     192.168.56.150
+abc            A     192.168.56.120
+```
+
+systemctl restart named
+host -t ns a.com 127.0.0.1
+最底下會出現 a.com name server dns1.a.com. 名字解析
+配置如果出現錯誤可使用以下兩個來檢查錯誤
+第一個無錯誤不會顯示訊息第二個無錯誤會顯使OK
+named-checkconf /etc/name.conf
+named-checkzone a.com /var/named/a.com.zone
+
+反向解析
+gedit /etc/named.rfc1912.zones  &
+內容
+```
+zone "56.168.192.in-addr.arpa" IN {
+	type master;
+	file "56.168.192.in-addr.arpa.zone";
+	allow-update { none; };
+};
+```
+
+cd /var/named
+ls
+gedit 56.168.192.in-addr.arpa.zone  
+```
+$TTL 600 ;10 minutes
+
+@ IN SOA       @ user.gmail.com (
+               2021031803 ;serial
+               10800      ;refresh
+               900        ;retry
+               604800     ;epxire
+               86400      ;minimux
+               )
+56.168.192.in-addr.arpa.   IN  NS dns1.a.com.
+200.56.168.192.in-addr.arpa. IN PTR www.a.com.
+150.56.168.192.in-addr.arpa. IN PTR ftp.a.com.
+```
+systemctl restart named
+nslookup 192.168.56.150 127.0.0.1
+
+
 # NAT 
+網路 haproxy telnetd dhcp
