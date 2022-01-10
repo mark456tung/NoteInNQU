@@ -6,10 +6,12 @@ Switch(config)#vlan 20
 Switch(config-vlan)#exit
 Switch(config)#int e0/0
 Switch(config-if)#switchport trunk encapsulation dot1q
+no sh
 Switch(config-if)#switchport mode trunk
 Switch(config-if)#int e0/1
 Switch(config-if)#switchport access vlan 10
 Switch(config-if)#switchport mode access
+no sh
 Switch(config-if)#int e0/2
 Switch(config-if)#switchport access vlan 20
 Switch(config-if)#switchport mode access
